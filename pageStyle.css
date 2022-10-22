@@ -24,3 +24,37 @@
     left: 0;
     height: 10%;
 }
+
+body {
+    padding: none;
+    border: none;
+    margin: auto;
+    background-image: linear-gradient(to left, #b46060, #6060B4);
+    /*AA55AA and AA5555*/
+    /*B46060 and 6060B4*/
+}
+
+h2 {
+    font-family: 'Brush Script MT', cursive;
+    font-size: 30px;
+    color: white;
+}
+
+p {
+    font-family: 'Courier New', monospace;
+    color: white;
+    overflow: hidden;
+    width: 0;
+    border-right: .15em solid orange;
+    animation:
+        typing 2.5s steps(50, end) forwards;
+}
+
+#typewriter_container {
+    display: inline-block;
+}
+
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
