@@ -2,36 +2,63 @@ const SUPPORTS_MEDIA_DEVICES = 'mediaDevices' in navigator;
 
 // works only on android chrome, nothing else :(
 
-if (SUPPORTS_MEDIA_DEVICES) {
-    navigator.mediaDevices.enumerateDevices().then(devices => {
-        const cameras = devices.filter((device) => device.kind === 'videoinput');
+const LightCommander = {
+    videoTrack: null,
+    
+    commandCb: undefined,
 
-        if(cameras.length === 0) {
-            throw 'No camera found on this device.';
-        }
-        const camera = cameras[cameras.length - 1];
-
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                deviceId: camera.deviceId,
-                facingMode: ['user', 'environment'],
-                height: {ideal: 1080},
-                width: {ideal: 1920}
+    torchState: undefined, // is boolean when ready
+    
+    async initTorch() {
+        if ("mediaDevices" in navigator) {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const cameras = devices.filter((device) => device.kind === 'videoinput');
+            
+            if (cameras.length === 0) {
+                throw "no camera found!";
             }
-        }).then(stream => {
-            const track = stream.getVideoTracks()[0];
-
-            const imageCapture = new ImageCapture(track)
-            const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
-                //todo: check if camera has a torch
-
-                const btn = document.querySelector('.switch');
-                btn.addEventListener('click', function() {
-                    track.applyConstraints({
-                        advanced: [{torch: true}]
-                    });
-                });
+            
+            const camera = cameras[cameras.length - 1]; // get last cam
+            
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    deviceId: camera.deviceId,
+                    facingMode: ['user', 'environment'],
+                    height: { ideal: 1 }, // get lowest possible res to reduce battery consumption
+                    width: { ideal: 1 }
+                }
             });
-        });
+            this.videoTrack = stream.getVideoTracks()[0]; // get first video track
+    
+            const imageCapture = new ImageCapture(this.videoTrack);
+            const photoCapabilities = await imageCapture.getPhotoCapabilities();
+            
+            this.setTorch = (on) => {
+                this.torchState = on;
+                this.videoTrack.applyConstraints({
+                    advanced: [{ torch: this.torchState }]
+                });
+            };
+            this.torchState = false;
+
+            const btn = document.querySelector('.switch');
+            
+            btn.addEventListener('click', () => {
+                this.setTorch(!this.torchState);
+            });
+            btn.disabled = false;
+        } else {
+            throw "media api not accesible!";
+        }
+    },
+    
+    setCommand() {
+        
+    }
+};
+
+window.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".init").addEventListener("click", async () => {
+        LightCommander.initTorch();
     });
-}
+});
