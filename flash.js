@@ -1,1 +1,4 @@
-document.getElementById("testing").innerHTML = "intro";
+var imageCaptureConfig = {
+    fillLightMode: "torch",
+    focusMode: "continuous"
+};
